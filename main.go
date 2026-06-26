@@ -29,7 +29,7 @@ func main() {
 	// API health endpoint
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"status": "healthy", "project": "{{PROJECT_NAME}}"})
+		json.NewEncoder(w).Encode(map[string]string{"status": "healthy", "project": "test-runner"})
 	})
 
 	// Serve frontend SPA
