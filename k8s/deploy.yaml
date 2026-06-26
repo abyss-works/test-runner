@@ -6,6 +6,12 @@ metadata:
     app: "test-runner"
 spec:
   replicas: 2
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64
+      nodeSelector:
+        kubernetes.io/arch: arm64
   selector:
     matchLabels:
       app: "test-runner"
