@@ -1,0 +1,10 @@
+name: DispatchTest
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: [self-hosted]
+    steps:
+      - run: echo "runner=works" | tee /tmp/runner-test.txt
+
