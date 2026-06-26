@@ -1,17 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: "{{PROJECT_NAME}}"
+  name: "test-runner"
 spec:
   ingressClassName: nginx
   rules:
-    - host: "{{DOMAIN}}"
+    - host: "test-runner.abyssworks.dev"
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: "{{PROJECT_NAME}}"
+                name: "test-runner"
                 port:
                   number: 80
