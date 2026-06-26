@@ -47,6 +47,54 @@
             <div class="prose prose-stone prose-sm max-w-none font-serif text-stone-700 leading-relaxed whitespace-pre-wrap border-t border-stone-100 pt-6">
               {{ detailPost.content }}
             </div>
+
+            <!-- Comments -->
+            <div class="border-t border-stone-100 mt-8 pt-6">
+              <h3 class="text-sm font-sans font-semibold text-stone-500 uppercase tracking-wide mb-4">
+                댓글 {{ comments.length }}개
+              </h3>
+
+              <div class="space-y-3 mb-6" v-if="comments.length > 0">
+                <div v-for="c in comments" :key="c.id"
+                  class="flex items-start gap-3 py-3 border-b border-stone-50 last:border-0">
+                  <div class="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-[10px] text-stone-500 font-sans shrink-0 mt-0.5">
+                    {{ c.author[0] }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-sans font-medium text-stone-600">{{ c.author }}</span>
+                      <span class="text-[10px] text-stone-300 font-sans">{{ formatDate(c.createdAt) }}</span>
+                      <button
+                        @click.stop="deleteComment(c.id)"
+                        class="ml-auto text-[10px] text-red-200 hover:text-red-400 font-sans"
+                      >삭제</button>
+                    </div>
+                    <p class="text-sm font-serif text-stone-700 mt-1 leading-relaxed">{{ c.content }}</p>
+                  </div>
+                </div>
+              </div>
+              <p v-else class="text-xs text-stone-300 font-sans mb-4">첫 댓글을 남겨보세요</p>
+
+              <!-- Comment form -->
+              <div class="flex gap-2">
+                <input
+                  v-model="commentAuthor"
+                  placeholder="작성자"
+                  class="w-24 px-2 py-1.5 text-xs bg-transparent border border-stone-200 rounded focus:border-stone-400 focus:ring-0 outline-none text-stone-600 font-sans transition-colors placeholder:text-stone-300"
+                />
+                <input
+                  v-model="commentContent"
+                  placeholder="댓글을 입력하세요..."
+                  class="flex-1 px-3 py-1.5 text-sm bg-transparent border border-stone-200 rounded focus:border-stone-400 focus:ring-0 outline-none text-stone-700 font-serif transition-colors placeholder:text-stone-300"
+                  @keydown.enter="submitComment"
+                />
+                <button
+                  @click="submitComment"
+                  :disabled="!commentContent.trim()"
+                  class="px-3 py-1.5 text-xs bg-stone-800 text-stone-50 rounded hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-sans tracking-wide uppercase"
+                >등록</button>
+              </div>
+            </div>
           </div>
         </div>
       </article>
@@ -160,6 +208,7 @@
 import { ref, onMounted } from 'vue'
 
 const posts = ref([])
+const comments = ref([])
 const loading = ref(true)
 const error = ref('')
 const showForm = ref(false)
@@ -168,6 +217,8 @@ const detailPost = ref(null)
 const formTitle = ref('')
 const formContent = ref('')
 const formAuthor = ref('')
+const commentContent = ref('')
+const commentAuthor = ref('')
 
 async function fetchPosts() {
   try {
@@ -271,9 +322,56 @@ async function deletePost(id) {
   }
 }
 
-function viewPost(post) {
+async function viewPost(post) {
   detailPost.value = post
   window.scrollTo({ top: 0, behavior: 'smooth' })
+  await fetchComments(post.id)
+}
+
+async function fetchComments(postId) {
+  try {
+    const res = await fetch(`/api/posts/${postId}/comments`)
+    if (!res.ok) throw new Error('댓글 로드 실패')
+    comments.value = await res.json()
+  } catch (e) {
+    console.error(e)
+    comments.value = []
+  }
+}
+
+async function submitComment() {
+  if (!commentContent.value.trim()) return
+  if (!detailPost.value) return
+  try {
+    const res = await fetch(`/api/posts/${detailPost.value.id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: commentContent.value,
+        author: commentAuthor.value || '익명'
+      })
+    })
+    if (!res.ok) throw new Error('댓글 등록 실패')
+    commentContent.value = ''
+    commentAuthor.value = ''
+    await fetchComments(detailPost.value.id)
+  } catch (e) {
+    error.value = e.message
+  }
+}
+
+async function deleteComment(commentId) {
+  if (!detailPost.value) return
+  if (!confirm('댓글을 삭제하시겠습니까?')) return
+  try {
+    const res = await fetch(`/api/posts/${detailPost.value.id}/comments/${commentId}`, {
+      method: 'DELETE'
+    })
+    if (!res.ok) throw new Error('댓글 삭제 실패')
+    await fetchComments(detailPost.value.id)
+  } catch (e) {
+    error.value = e.message
+  }
 }
 
 onMounted(fetchPosts)
