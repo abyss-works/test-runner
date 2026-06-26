@@ -1,6 +1,6 @@
-# {{PROJECT_NAME}}
+# test-runner
 
-{{PROJECT_DESCRIPTION}}
+test-runner — scaffolded by idp-starter
 
 ## Tech Stack
 
@@ -19,8 +19,8 @@ cd frontend && npm install && npm run dev
 go run .
 
 # Docker
-docker build -t {{PROJECT_NAME}} .
-docker run -p 8080:8080 {{PROJECT_NAME}}
+docker build -t test-runner .
+docker run -p 8080:8080 test-runner
 ```
 
 ## Configuration
