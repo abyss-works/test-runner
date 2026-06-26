@@ -1,3 +1,3 @@
-module github.com/abyss-works/template-go-vue
+module github.com/abyss-works/test-runner
 
-go 1.23
+go 1.22
